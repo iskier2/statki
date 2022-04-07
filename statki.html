@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        background-color: #ffe8d3;
+    }
+
+    .pole {
+        border: solid #0044ff 2px;
+        width: 48px;
+        height: 48px;
+        float: left;
+    }
+
+    #container1 {
+        border: solid blue 1px;
+        width: 520px;
+        height: 520px;
+        float: left;
+        position: absolute;
+        left: 850px;
+        top: 15px;
+    }
+
+    #container2 {
+        border: solid blue 1px;
+        width: 520px;
+        height: 520px;
+        float: left;
+        position: absolute;
+        left: 260px;
+        top: 15px;
+    }
+
+    .ships {
+        height: 52px;
+        border: solid #0044ff 1px;
+        position: absolute;
+        left: 15px;
+        cursor: pointer;
+    }
+
+    #startButton {
+        border: solid blue 4px;
+        width: 175px;
+        height: 50px;
+        position: absolute;
+        top: 600px;
+        left: 725px;
+        background-color: #0044ff;
+        cursor: pointer;
+    }
+
+    #startText,
+    #turnText {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        font-weight: 600;
+        color: blue;
+    }
+
+    #startDiv {
+        border: solid blue 4px;
+        width: 175px;
+        height: 50px;
+        position: absolute;
+        top: 600px;
+        left: 725px;
+        background-color: #0044ff;
+    }
+</style>
+
+<body>
+    <div id="container1"></div>
+    <div id="container2"></div>
+    <div id="container3"></div>
+    <div id="pusty" class="0"></div>
+    <script>
+        moveQueued = false
+        end = false
+        control = 1
+        block = true;
+        etap = 1
+        var container1 = document.getElementById("container1")
+        var container2 = document.getElementById("container2")
+        //generuje tablice dla losowo generowanych statków
+        tab1 = []
+        tab2 = []
+        tab3 = []
+        tab4 = []
+        tab7 = []
+        var n = 10
+        function tabGenerate(tab) {
+            for (i = 0; i <= n + 1; i++) {
+                tab[i] = []
+                for (j = 0; j <= n + 1; j++) {
+                    tab[i][j] = 0
+                }
+            }
+        }
+        //generuje plansze po prawej stronie
+        function areaGenerate1() {
+            for (i = 1; i <= n; i++) {
+                for (j = 1; j <= n; j++) {
+                    var div = document.createElement("div")
+                    div.classList.add("pole")
+                    div.setAttribute('id', i + "X" + j)
+                    div.style.backgroundColor = "#0044ff"
+                    div.style.borderColor = "#0000ff"
+                    if (j == 1) {
+                        div.style.clear = "both";
+                    }
+                    container1.appendChild(div)
+
+                }
+            }
+        }
+        //generuje plansze po lewej stronie
+        function areaGenerate2() {
+            for (i = 1; i <= n; i++) {
+                for (j = 1; j <= n; j++) {
+                    var div = document.createElement("div")
+                    div.classList.add("pole")
+                    div.setAttribute('id', i + "Y" + j)
+                    div.style.backgroundColor = "#0044ff"
+                    div.style.borderColor = "#0000ff"
+                    if (j == 1) {
+                        div.style.clear = "both";
+                    }
+                    div.onmouseover = function () {
+                        idToIJ(this.id)
+                        mouseMove(this, "#3377ff", "#ff1111")
+                        currentDiv = this
+                    }
+                    div.onmouseout = function () {
+                        idToIJ(this.id)
+                        mouseMove(this, "#0044ff", "#0044ff")
+                    }
+                    div.onclick = function () {
+                        idToIJ(this.id)
+                        if (length == 1) {
+                            var control = 1
+                            if (tab2[i][j] == 0) {
+                                pointGenerate(i, j, tab2)
+                            }
+                            else {
+                                control = 0
+                            }
+                        }
+                        if (length == 2) {
+                            if (horizontal == 1 && j > 9) {
+                                j = 9
+                            }
+                            if (vertical == 1 && i > 9) {
+                                i = 9
+                            }
+                            var control = 1
+                            if (tab2[i][j] == 0 && tab2[i + vertical][j + horizontal] == 0) {
+                                pointGenerate(i, j, tab2)
+                                pointGenerate(i + vertical, j + horizontal, tab2)
+                            }
+                            else {
+                                control = 0
+                            }
+                        }
+                        if (length == 3) {
+                            if (horizontal == 1 && j > 8) {
+                                j = 8
+                            }
+                            if (vertical == 1 && i > 8) {
+                                i = 8
+                            }
+                            var control = 1
+                            if (tab2[i][j] == 0 && tab2[i + vertical][j + horizontal] == 0 && tab2[i + vertical * 2][j + horizontal * 2] == 0) {
+                                pointGenerate(i, j, tab2)
+                                pointGenerate(i + vertical, j + horizontal, tab2)
+                                pointGenerate(i + vertical * 2, j + horizontal * 2, tab2)
+                            }
+                            else {
+                                control = 0
+                            }
+                        }
+                        if (length == 4) {
+                            if (horizontal == 1 && j > 7) {
+                                j = 7
+                            }
+                            if (vertical == 1 && i > 7) {
+                                i = 7
+                            }
+                            var control = 1
+                            if (tab2[i][j] == 0 && tab2[i + vertical][j + horizontal] == 0 && tab2[i + vertical * 2][j + horizontal * 2] == 0 && tab2[i + vertical * 3][j + horizontal * 3] == 0) {
+                                pointGenerate(i, j, tab2)
+                                pointGenerate(i + vertical, j + horizontal, tab2)
+                                pointGenerate(i + vertical * 2, j + horizontal * 2, tab2)
+                                pointGenerate(i + vertical * 3, j + horizontal * 3, tab2)
+                            }
+                            else {
+                                control = 0
+                            }
+                        }
+                        if (control == 1) {
+                            update("Y", tab2)
+                            numberOfBoats--
+                            chosenShip.remove()
+                            chosenShip = document.getElementById("pusty")
+                            length = chosenShip.classList[0]
+                            if (numberOfBoats == 0) {
+                                startButton = document.createElement("div")
+                                startButton.id = "startButton"
+                                startText = document.createElement("p")
+                                startText.innerHTML = "START"
+                                startText.id = "startText"
+                                startButton.appendChild(startText)
+                                container3.appendChild(startButton)
+                                startButton.onclick = function () {
+                                    start()
+                                }
+
+                            }
+                        }
+
+
+                    }
+                    container2.appendChild(div)
+
+                }
+
+            }
+        }
+        function mouseMove(div, green, red) {
+
+            if (length == 1) {
+                if (tab2[i][j] == 0)
+                    div.style.backgroundColor = green
+                if (tab2[i][j] == 2)
+                    div.style.backgroundColor = red
+            }
+
+            if (length == 2) {
+                if (horizontal == 1 && j > 9) {
+                    j = 9
+                }
+                if (vertical == 1 && i > 9) {
+                    i = 9
+                }
+                if (tab2[i][j] == 0 && tab2[i + vertical][j + horizontal] == 0) {
+                    coloringHorizontal(2, i, j, green)
+                }
+                if (tab2[i][j] == 2 || tab2[i + vertical][j + horizontal] == 2) {
+                    coloringHorizontal(2, i, j, red)
+                }
+            }
+            if (length == 3) {
+                if (horizontal == 1 && j > 8) {
+                    j = 8
+                }
+                if (vertical == 1 && i > 8) {
+                    i = 8
+                }
+                if (tab2[i][j] == 0 && tab2[i + vertical][j + horizontal] == 0 && tab2[i + vertical * 2][j + horizontal * 2] == 0) {
+                    coloringHorizontal(3, i, j, green)
+                }
+                if (tab2[i][j] == 2 || tab2[i + vertical][j + horizontal] == 2 || tab2[i + vertical * 2][j + horizontal * 2] == 2) {
+                    coloringHorizontal(3, i, j, red)
+                }
+            }
+            if (length == 4) {
+                if (horizontal == 1 && j > 7) {
+                    j = 7
+                }
+                if (vertical == 1 && i > 7) {
+                    i = 7
+                }
+                if (tab2[i][j] == 0 && tab2[i + vertical][j + horizontal] == 0 && tab2[i + vertical * 2][j + horizontal * 2] == 0 && tab2[i + vertical * 3][j + horizontal * 3] == 0) {
+                    coloringHorizontal(4, i, j, green)
+                }
+                if (tab2[i][j] == 2 || tab2[i + vertical][j + horizontal] == 2 || tab2[i + vertical * 2][j + horizontal * 2] == 2 || tab2[i + vertical * 3][j + horizontal * 3] == 2) {
+                    coloringHorizontal(4, i, j, red)
+                }
+            }
+            if (control != 0)
+                update("Y", tab2)
+        }
+
+        function coloringHorizontal(n, i, j, color) {
+            for (m = 0; m < n; m++) {
+                var x = i + vertical * m
+                var y = j + horizontal * m
+                document.getElementById(x + "Y" + y).style.backgroundColor = color
+            }
+        }
+        function idToIJ(id) {
+            if (id[1] == "Y") {
+                i = parseInt(id[0])
+                if (id[3] == 0)
+                    j = parseInt(id[2] + 0)
+                else
+                    j = parseInt(id[2])
+            }
+            else {
+                i = parseInt(id[0] + id[1])
+                if (id[4] == 0)
+                    j = parseInt(id[3] + 0)
+                else
+                    j = parseInt(id[3])
+            }
+        }
+        //maluje po prawej stronie pola na czarno poprzez wczytanie danych z tablicy
+        function update(pL, tab) {
+
+            for (i = 1; i <= n; i++) {
+
+                for (j = 1; j <= n; j++) {
+
+                    var div = document.getElementById(i + pL + j);
+                    //div.innerHTML = tab[i][j]
+                    if (tab[i][j] == 1) {
+                        div.style.backgroundColor = "#552222";
+                        div.style.borderColor = "#331111";
+                    }
+                    /*
+                    if (tab[i][j] == 2) {
+                        div.style.backgroundColor = "red";
+                    }
+                    if (tab[i][j] == 3) {
+                        div.style.backgroundColor = "green";
+                    }
+                    */
+                }
+
+            }
+        }
+
+        //generuje statki losowa na planszy po prawej stronie
+        function boatGenerate(boat, tab) {
+            var X = parseInt(Math.random() * 100) % 10 + 1
+            var Y = parseInt(Math.random() * 10 + 1)
+
+            if (boat == 1) {
+                if (tab[Y][X] == 0) {
+                    pointGenerate(Y, X, tab1)
+
+                }
+                else {
+
+                    boatGenerate(1, tab1)
+                }
+            }
+
+            if (boat == 2) {
+                if (parseInt(Math.random() * 2) == 1) {
+                    if (tab[Y][X] == 0 && X <= 9 && tab[Y][X + 1] == 0) {
+                        pointGenerate(Y, X, tab1)
+                        pointGenerate(Y, X + 1, tab1)
+                    }
+                    else {
+
+                        boatGenerate(2, tab1)
+                    }
+                }
+                else {
+                    if (tab[Y][X] == 0 && Y <= 9 && tab[Y + 1][X] == 0) {
+                        pointGenerate(Y, X, tab1)
+                        pointGenerate(Y + 1, X, tab1)
+                    }
+                    else {
+
+                        boatGenerate(2, tab1)
+                    }
+                }
+            }
+            if (boat == 3) {
+                if (parseInt(Math.random() * 2) == 1) {
+                    if (tab[Y][X] == 0 && X <= 8 && tab[Y][X + 1] == 0 && tab[Y][X + 2] == 0) {
+                        pointGenerate(Y, X, tab1)
+                        pointGenerate(Y, X + 1, tab1)
+                        pointGenerate(Y, X + 2, tab1)
+                    }
+                    else {
+
+                        boatGenerate(3, tab1)
+                    }
+                }
+                else {
+                    if (tab[Y][X] == 0 && Y <= 8 && tab[Y + 1][X] == 0 && tab[Y + 2][X] == 0) {
+                        pointGenerate(Y, X, tab1)
+                        pointGenerate(Y + 1, X, tab1)
+                        pointGenerate(Y + 2, X, tab1)
+                    }
+                    else {
+
+                        boatGenerate(3, tab1)
+                    }
+                }
+            }
+            if (boat == 4) {
+                if (parseInt(Math.random() * 2) == 1) {
+                    if (tab[Y][X] == 0 && X <= 7 && tab[Y][X + 1] == 0 && tab[Y][X + 2] == 0 && tab[Y][X + 3] == 0) {
+                        pointGenerate(Y, X, tab1)
+                        pointGenerate(Y, X + 1, tab1)
+                        pointGenerate(Y, X + 2, tab1)
+                        pointGenerate(Y, X + 3, tab1)
+                    }
+                    else {
+
+                        boatGenerate(4, tab1)
+                    }
+                }
+                else {
+                    if (tab[Y][X] == 0 && Y <= 7 && tab[Y + 1][X] == 0 && tab[Y + 2][X] == 0 && tab[Y + 3][X] == 0) {
+                        pointGenerate(Y, X, tab1)
+                        pointGenerate(Y + 1, X, tab1)
+                        pointGenerate(Y + 2, X, tab1)
+                        pointGenerate(Y + 3, X, tab1)
+                    }
+                    else {
+
+                        boatGenerate(4, tab1)
+                    }
+                }
+            }
+            //update("X", tab1)
+        }
+        //nadaje wartość pól dla tablicy losowo generowanych statków
+        function pointGenerate(Y, X, tab) {
+            tab[Y][X] = 1
+            if (tab[Y - 1][X] == 0)
+                tab[Y - 1][X] = 2
+            if (tab[Y + 1][X] == 0)
+                tab[Y + 1][X] = 2
+            if (tab[Y - 1][X - 1] == 0)
+                tab[Y - 1][X - 1] = 2
+            if (tab[Y + 1][X - 1] == 0)
+                tab[Y + 1][X - 1] = 2
+            if (tab[Y][X - 1] == 0)
+                tab[Y][X - 1] = 2
+            if (tab[Y - 1][X + 1] == 0)
+                tab[Y - 1][X + 1] = 2
+            if (tab[Y + 1][X + 1] == 0)
+                tab[Y + 1][X + 1] = 2
+            if (tab[Y][X + 1] == 0)
+                tab[Y][X + 1] = 2
+        }
+        //generuje statki po lewej stronie
+        boats = 0
+        numberOfBoats = 0
+        function boat(n) {
+            var ship = document.createElement("div")
+            var stan = 0
+            ship.classList.add(n)
+            ship.classList.add("ships")
+            ship.style.width = n * 52 + "px"
+            ship.style.top = boats * 67 + 15 + "px"
+            ship.id = "Statek" + boats
+            for (i = 1; i <= n; i++) {
+                var div = document.createElement("div")
+                div.classList.add("pole")
+                div.style.borderColor = "#331111"
+                ship.appendChild(div)
+            }
+            document.getElementById("container3").appendChild(ship)
+            boats++
+            ship.style.backgroundColor = "#552222"
+            ship.style.borderColor = "#331111"
+            ship.onmouseover = function () {
+                this.style.backgroundColor = "#774444"
+                chosenShip.style.backgroundColor = "#552222"
+            }
+            ship.onmouseout = function () {
+                this.style.backgroundColor = "#552222"
+                chosenShip.style.backgroundColor = "#774444"
+            }
+            chosenShip = document.getElementById("pusty")
+            ship.onclick = function () {
+                chosenShip.style.backgroundColor = "#552222"
+                chosenShip = this
+                length = chosenShip.classList[0]
+                chosenShip.style.backgroundColor = "#774444"
+            }
+            numberOfBoats++
+        }
+        horizontal = 1
+        vertical = 0
+        /*
+        window.addEventListener("keydown", checkKeyPress, false);
+        function checkKeyPress(key) {
+            if (key.keyCode == "32") {
+                if (horizontal == 0) {
+                    horizontal = 1
+                    vertical = 0
+                }
+                else {
+                    horizontal = 0
+                    vertical = 1
+                }
+                for (i = 1; i <= n; i++) {
+                    for (j = 1; j <= n; j++) {
+                        document.getElementById(i + "Y" + j).style.backgroundColor = "#888888"
+                    }
+                }
+                update("Y", tab2)
+                idToIJ(currentDiv.id)
+                mouseMove(currentDiv, "#555555", "red")
+
+            }
+        }*/
+        document.getElementById("container2").oncontextmenu = (event) => {
+            event.preventDefault()
+            if (horizontal == 0) {
+                horizontal = 1
+                vertical = 0
+            }
+            else {
+                horizontal = 0
+                vertical = 1
+            }
+            for (i = 1; i <= n; i++) {
+                for (j = 1; j <= n; j++) {
+                    document.getElementById(i + "Y" + j).style.backgroundColor = "#0044ff"
+                }
+            }
+            update("Y", tab2)
+            idToIJ(currentDiv.id)
+            mouseMove(currentDiv, "#3377ff", "#ff1111")
+        }
+        function start() {
+            los(0, false, 1, 1)
+
+            document.getElementById("container1").style.cursor = "pointer"
+            startDiv = document.createElement("div")
+            startDiv.id = "startDiv"
+            turnText = document.createElement("p")
+            turnText.id = "turnText"
+            turnText.innerHTML = "ruch gracza"
+            startDiv.appendChild(turnText)
+            container3.appendChild(startDiv)
+            document.appendChild
+            trafieniaGracza = 0
+            trafieniaKomputera = 0
+            console.log("start")
+            control = 0
+            document.getElementById("startButton").remove()
+            for (let i = 1; i <= n; i++) {
+                for (let j = 1; j <= n; j++) {
+                    let div = document.getElementById(i + "X" + j)
+
+                    div.onclick = function () {
+                        if (block == true && tab4[i][j] == 0 && end == false) {
+                            tab4[i][j] = 1
+                            //console.log(i + " " + j)
+                            if (tab1[i][j] == 1) {
+                                let trafiony = document.createElement("img");
+                                trafiony.setAttribute("src", "trafiony.png");
+                                trafiony.setAttribute("height", "50");
+                                trafiony.setAttribute("width", "50");
+                                trafiony.setAttribute("alt", "trafiony");
+                                div.appendChild(trafiony);
+                                trafieniaGracza++
+                                if (trafieniaGracza == 20) {
+                                    turnText.innerHTML = "gracz wygrywa!"
+                                    update("X", tab1)
+                                    end = true
+                                }
+                            }
+                            else {
+                                let pudlo = document.createElement("img");
+                                pudlo.setAttribute("src", "pudlo.png");
+                                pudlo.setAttribute("height", "50");
+                                pudlo.setAttribute("width", "50");
+                                pudlo.setAttribute("alt", "trafiony");
+                                div.appendChild(pudlo);
+                                //div.style.backgroundImage = "pudlo.png"
+                            }
+                            if (end == false) {
+                                block = false
+                                turnText.innerHTML = "ruch komputera"
+                                window.setTimeout(ruchKomputera, 1000)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        tab6 = []
+        tabGenerate(tab7)
+        function los(i, n) {
+            if (i <= 98) {
+                var x = parseInt(Math.random() * 100) % 10 + 1
+                var y = parseInt(Math.random() * 10 + 1)
+
+                if (tab7[x][y] == 0) {
+                    tab7[x][y] = 1
+
+                    if (tab2[x][y] == 1) {
+                        xTrafiony = x
+                        yTrafiony = y
+                        szanse = 1
+                        tab6[i] = { x: x, y: y, z: 1 }
+                        if (n > 0) {
+                            if (tab7[x][y] == 0)
+                                los(i, 4)
+                        }
+                    }
+                    else {
+                        tab6[i] = { x: x, y: y, z: 0 }
+                        los(i, 0)
+                    }
+                }
+                else
+                    los(i, 0)
+            }
+        }
+
+        function ruchKomputera() {
+            XruchKomputera = parseInt(Math.random() * 100) % 10 + 1
+            YruchKomputera = parseInt(Math.random() * 10 + 1)
+            console.log(strzalKomputera(XruchKomputera, YruchKomputera))
+
+        }
+        function strzalKomputera(XruchKomputera, YruchKomputera) {
+            console.log(XruchKomputera + " " + YruchKomputera)
+            if (tab3[XruchKomputera][YruchKomputera] == 0) {
+                let div = document.getElementById(XruchKomputera + "Y" + YruchKomputera)
+                tab3[XruchKomputera][YruchKomputera] = 1
+                if (tab2[XruchKomputera][YruchKomputera] == 1) {
+                    let trafiony = document.createElement("img");
+                    trafiony.setAttribute("src", "trafiony.png");
+                    trafiony.setAttribute("height", "50");
+                    trafiony.setAttribute("width", "50");
+                    trafiony.setAttribute("alt", "trafiony");
+                    div.appendChild(trafiony);
+                    trafieniaKomputera++
+                    if (trafieniaKomputera == 20) {
+                        turnText.innerHTML = "komputer wygrywa!"
+                        update("X", tab1)
+                        end = true
+                    }
+                    //sztuczna inteligencja p1
+                    moveQueued = true
+                }
+                else {
+                    let pudlo = document.createElement("img");
+                    pudlo.setAttribute("src", "pudlo.png");
+                    pudlo.setAttribute("height", "50");
+                    pudlo.setAttribute("width", "50");
+                    pudlo.setAttribute("alt", "trafiony");
+                    div.appendChild(pudlo);
+                    //div.style.backgroundImage = "pudlo.png"
+                }
+                if (end == false) {
+                    tab3[XruchKomputera][YruchKomputera] = 1
+                    block = true
+                }
+            }
+            else {
+                ruchKomputera()
+            }
+            if (end == false)
+                turnText.innerHTML = "ruch gracza"
+            if (tab3[XruchKomputera][YruchKomputera] == 0 && tab2[XruchKomputera][YruchKomputera] == 1) {
+                return true
+            }
+            else
+                return false
+        }
+        boat(4);
+        boat(3);
+        boat(3);
+        boat(2);
+        boat(2);
+        boat(2);
+        boat(1);
+        boat(1);
+        boat(1);
+        boat(1);
+        tabGenerate(tab1)
+        tabGenerate(tab2)
+        tabGenerate(tab3)
+        tabGenerate(tab4)
+
+        areaGenerate1()
+        areaGenerate2()
+        boatGenerate(4, tab1)
+        boatGenerate(3, tab1)
+        boatGenerate(3, tab1)
+        boatGenerate(2, tab1)
+        boatGenerate(2, tab1)
+        boatGenerate(2, tab1)
+        boatGenerate(1, tab1)
+        boatGenerate(1, tab1)
+        boatGenerate(1, tab1)
+        boatGenerate(1, tab1)
+    </script>
+</body>
+
+</html>
